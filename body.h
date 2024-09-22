@@ -1,25 +1,28 @@
 #ifndef BODY_H
 #define BODY_H
 
-// Class to store the properties of a body - inclusive of initial and current positions, velocities, accelerations, and mass
-class body {
-public:
-    // Initial positions
-    double x0, y0, z0;
+#include <string>
 
-    // Initial velocities
-    double vx0, vy0, vz0;
-
-    // Mass
-    double mass;
-
-    // Current positions
+// Struct to store the properties of a body - inclusive of initial and current positions, velocities, accelerations, and mass
+struct Position {
     double x, y, z;
+};
 
-    // Current velocities
+struct Velocity {
     double vx, vy, vz;
+};
 
-    // Accelerations
+struct Color {
+    int r, g, b;
+};
+
+struct Body {
+    std::string name;
+    double mass;
+    Position position;
+    Velocity velocity;
+    Color color;
+
     double ax, ay, az;
 };
 
