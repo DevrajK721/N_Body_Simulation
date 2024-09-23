@@ -57,7 +57,7 @@ int main() {
     }
 
     // Write headers to output file
-    std::ofstream outputFile("output.txt");
+    std::ofstream outputFile("../output.txt");
     outputFile << std::setw(20) << "Body" << std::setw(20) << "Time"
                << std::setw(20) << "x" << std::setw(20) << "y"
                << std::setw(20) << "z" << std::setw(20) << "vx"
