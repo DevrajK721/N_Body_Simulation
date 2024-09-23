@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 #include <string>
 #include <fstream>
 #include <iomanip>
@@ -82,9 +83,11 @@ int main() {
 
     outputFile.close(); // Close the output file
 
-    // Set up plot
-    plt::figure();
-    plt::title("3D Plot of N-Body Simulation");
+    int result = system("cd .. && python NBodySimViz.py");
+
+    if (result != 0) {
+        std::cerr << "Error running Python script." << std::endl;
+    }
 
     return 0;
 }
