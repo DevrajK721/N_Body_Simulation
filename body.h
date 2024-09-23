@@ -2,6 +2,7 @@
 #define BODY_H
 
 #include <string>
+#include <vector>
 
 // Struct to store the properties of a body - inclusive of initial and current positions, velocities, accelerations, and mass
 struct Position {

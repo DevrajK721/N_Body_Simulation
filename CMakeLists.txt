@@ -1,25 +1,33 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.10)
 
-# Set the path to your vcpkg toolchain file
 set(CMAKE_TOOLCHAIN_FILE "C:/Users/Devra/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+set(CMAKE_PREFIX_PATH "C:/Users/Devra/vcpkg/installed/x64-windows")
 
 project(N_Body_Simulation)
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
-# Set CMAKE_PREFIX_PATH to help CMake find packages installed by vcpkg
-set(CMAKE_PREFIX_PATH "C:/Users/Devra/vcpkg/installed/x64-windows")
+# Find Python and NumPy
+find_package(Python COMPONENTS Development REQUIRED)
+execute_process(COMMAND python -c "import numpy; print(numpy.get_include())"
+        OUTPUT_VARIABLE NUMPY_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-# Find required packages
-find_package(nlohmann_json REQUIRED)
+find_path(MATPLOTLIB_CPP_INCLUDE_DIRS "matplotlibcpp.h")
+find_package(nlohmann_json CONFIG REQUIRED)
 
-# Specify the executable to be built
+# Create the executable
 add_executable(NBodySim main.cpp functions.cpp)
 
-# Link the required libraries to the executable
-target_link_libraries(NBodySim PRIVATE nlohmann_json::nlohmann_json)
+# Include directories for Python, NumPy, and matplotlibcpp
+target_include_directories(NBodySim PRIVATE ${MATPLOTLIB_CPP_INCLUDE_DIRS} ${Python_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR})
 
+# Link Python and NumPy libraries
+target_link_libraries(NBodySim PRIVATE nlohmann_json nlohmann_json::nlohmann_json ${Python_LIBRARIES})
 
+# Set the output directory for files
+set(OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/output")
+file(MAKE_DIRECTORY ${OUTPUT_DIRECTORY})
 
+# Define output file location
+add_definitions(-DOUTPUT_DIRECTORY="${OUTPUT_DIRECTORY}/output.txt")
 
