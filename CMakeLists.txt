@@ -24,10 +24,6 @@ target_include_directories(NBodySim PRIVATE ${MATPLOTLIB_CPP_INCLUDE_DIRS} ${Pyt
 # Link Python and NumPy libraries
 target_link_libraries(NBodySim PRIVATE nlohmann_json nlohmann_json::nlohmann_json ${Python_LIBRARIES})
 
-# Set the output directory for files
-set(OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/output")
-file(MAKE_DIRECTORY ${OUTPUT_DIRECTORY})
-
 # Define output file location
 add_definitions(-DOUTPUT_DIRECTORY="${OUTPUT_DIRECTORY}/output.txt")
 
