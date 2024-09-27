@@ -1,45 +1,45 @@
 {
   "gravitational_constant": 6.67430e-11,
-  "dt": 3600,
-  "T": 31536000,
+  "dt": 0.1,
+  "T": 30,
   "n": 2,
   "bodies": [
     {
-      "name": "Sun",
-      "mass": 1.989e30,
+      "name": "PlanetA",
+      "mass": 5.0e24,
       "position": {
-        "x": 0.0,
+        "x": 1.0e11,
         "y": 0.0,
         "z": 0.0
       },
       "velocity": {
         "vx": 0.0,
-        "vy": 0.0,
+        "vy": 30000.0,
         "vz": 0.0
       },
       "color": {
         "r": 255,
-        "g": 255,
+        "g": 0,
         "b": 0
       }
     },
     {
-      "name": "Earth",
-      "mass": 5.972e24,
+      "name": "PlanetB",
+      "mass": 5.0e24,
       "position": {
-        "x": 149.6e9,
+        "x": 1.5e11,
         "y": 0.0,
         "z": 0.0
       },
       "velocity": {
         "vx": 0.0,
-        "vy": 29.78e3,
+        "vy": 27000.0,
         "vz": 0.0
       },
       "color": {
         "r": 0,
-        "g": 0,
-        "b": 255
+        "g": 255,
+        "b": 0
       }
     }
   ]

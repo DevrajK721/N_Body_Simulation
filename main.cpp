@@ -6,10 +6,15 @@
 #include <iomanip>
 #include <sstream>
 #include "header.h" // Ensure this contains your Body definition
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <GL/glu.h>
 #include <nlohmann/json.hpp>
-#include <matplotlibcpp.h>
+#include <cstdio>
 
-namespace plt = matplotlibcpp;
 using json = nlohmann::json;
 
 // Function to read JSON data
@@ -46,6 +51,45 @@ bool loadData(const std::string& filename, double& G, double& dt, double& T, int
     return true;
 }
 
+// Function to extract data from output file
+std::vector<Position> extractData(const std::string& filename, const std::string& targetName)
+{
+    std::ifstream file(filename);
+    std::vector<Position> positions;
+    std::string line;
+
+    // Check if file is open
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+        return positions;
+    }
+
+    // Skip the header line
+    std::getline(file, line);
+
+    // Read the data
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string name;
+        double t, x, y, z, vx, vy, vz;
+
+        // Read the data from the line
+        time_t time;
+        if (iss >> name >> time >> x >> y >> z >> vx >> vy >> vz)
+        {
+            // Check if name matches targetName
+            if (name == targetName)
+            {
+                // Store x, y, z positions in the array
+                positions.push_back({ x, y, z });
+            }
+        }
+    }
+    // Close the file
+    file.close();
+    return positions;
+}
+
 int main() {
     // Load data
     double G, dt, T;
@@ -68,6 +112,7 @@ int main() {
     double t0 = 0.0, t_final = T;
     for (double t = t0; t <= t_final; t += dt) {
         RK4(bodies, n, t, dt, G); // Call RK4
+
         // Write current state to output file
         for (const auto& body : bodies) {
             outputFile << std::setw(20) << body.name
@@ -83,11 +128,76 @@ int main() {
 
     outputFile.close(); // Close the output file
 
-    int result = system("cd .. && python NBodySimViz.py");
+    // Create vectors to hold x, y, and z coordinates for each body
+    std::vector<std::vector<double>> xCoordinates(bodies.size());
+    std::vector<std::vector<double>> yCoordinates(bodies.size());
+    std::vector<std::vector<double>> zCoordinates(bodies.size());
 
-    if (result != 0) {
-        std::cerr << "Error running Python script." << std::endl;
+    // Extract data from output file
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        std::vector<Position> positions = extractData("../output.txt", bodies[i].name);
+        for (const auto& position : positions) {
+            xCoordinates[i].push_back(position.x); // Store x coordinate
+            yCoordinates[i].push_back(position.y); // Store y coordinate
+            zCoordinates[i].push_back(position.z); // Store z coordinate
+        }
     }
+
+    // Normalizing values for simulation (time-saving)
+    double maxX = std::numeric_limits<double>::lowest();
+    double maxY = std::numeric_limits<double>::lowest();
+    double maxZ = std::numeric_limits<double>::lowest();
+
+    // Extract data and find the maximum coordinates
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        std::vector<Position> positions = extractData("../output.txt", bodies[i].name);
+        for (const auto& position : positions) {
+            xCoordinates[i].push_back(position.x); // Store x coordinate
+            yCoordinates[i].push_back(position.y); // Store y coordinate
+            zCoordinates[i].push_back(position.z); // Store z coordinate
+
+            // Update maximum coordinates
+            if (position.x > maxX) {
+                maxX = position.x;
+            }
+            if (position.y > maxY) {
+                maxY = position.y;
+            }
+            if (position.z > maxZ) {
+                maxZ = position.z;
+            }
+        }
+    }
+
+    // Print the maximum coordinates to the terminal
+    std::cout << "Maximum Coordinates:" << std::endl;
+    std::cout << "Max X: " << maxX << std::endl;
+    std::cout << "Max Y: " << maxY << std::endl;
+    std::cout << "Max Z: " << maxZ << std::endl;
+
+    // Normalize x, y, and z coordinates by their maximum values
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        for (size_t j = 0; j < xCoordinates[i].size(); ++j) {
+            xCoordinates[i][j] /= maxX; // Normalize x coordinate
+            yCoordinates[i][j] /= maxY; // Normalize y coordinate
+            zCoordinates[i][j] /= maxZ; // Normalize z coordinate
+        }
+    }
+
+    std::vector<double> norm_time; // Vector to hold normalized time values
+
+    // Check if there are any bodies and if the first body's coordinates are populated
+    if (!xCoordinates.empty() && !xCoordinates[0].empty()) {
+        size_t numPoints = xCoordinates[0].size(); // Length of the first body's coordinates
+
+        // Generate equally spaced time values between 0 and 30 seconds
+        norm_time.resize(numPoints); // Resize norm_time to match the number of points
+        for (size_t j = 0; j < numPoints; ++j) {
+            norm_time[j] = (30.0 / (numPoints - 1)) * j; // Equally spaced points
+        }
+    }
+
+
 
     return 0;
 }
