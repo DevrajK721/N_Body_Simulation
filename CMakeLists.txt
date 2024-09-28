@@ -1,29 +1,27 @@
+# Minimum version of CMake required to build this project
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/Devra/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
-set(CMAKE_PREFIX_PATH "C:/Users/Devra/vcpkg/installed/x64-windows")
-
+# Name of the project
 project(N_Body_Simulation)
 
-set(CMAKE_CXX_STANDARD 23)
+# Set the C++ standard to use
+set(CMAKE_CXX_STANDARD 20)
 
-# Find Python and NumPy
-find_package(Python COMPONENTS Development REQUIRED)
-execute_process(COMMAND python -c "import numpy; print(numpy.get_include())"
-        OUTPUT_VARIABLE NUMPY_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Specify the Python executable
+#set(Python_EXECUTABLE "C:/Users/Devra/anaconda3/python.exe")
 
-find_path(MATPLOTLIB_CPP_INCLUDE_DIRS "matplotlibcpp.h")
-find_package(nlohmann_json CONFIG REQUIRED)
+## Include Python Libraries since we are using matplotlib-cpp
+#find_package(Python3 REQUIRED COMPONENTS Development NumPy)
 
-# Create the executable
+# Set Json directory
+set(JSON_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/json")
+#set(MPL_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/matplotlib-cpp")
+
+# Add the executable (DO NOT CHANGE)
 add_executable(NBodySim main.cpp functions.cpp)
 
-# Include directories for Python, NumPy, and matplotlibcpp
-target_include_directories(NBodySim PRIVATE ${MATPLOTLIB_CPP_INCLUDE_DIRS} ${Python_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR})
-
-# Link Python and NumPy libraries
-target_link_libraries(NBodySim PRIVATE nlohmann_json nlohmann_json::nlohmann_json ${Python_LIBRARIES})
-
-# Define output file location
-add_definitions(-DOUTPUT_DIRECTORY="${OUTPUT_DIRECTORY}/output.txt")
-
+## Include the directories (DO NOT CHANGE)
+include_directories("${JSON_DIR}/include") #"${Python3_INCLUDE_DIRS}" "${MPL_DIR}" "${Python3_NumPy_INCLUDE_DIRS}")
+#
+## Link the libraries (DO NOT CHANGE)
+#target_link_libraries(NBodySim ${Python3_LIBRARIES} "C:/Users/Devra/anaconda3/libs/python312_d.lib")

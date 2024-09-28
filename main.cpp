@@ -1,15 +1,15 @@
 #include <iostream>
 #include <vector>
-#include <cstdlib>
 #include <string>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 #include "header.h" // Ensure this contains your Body definition
+#include <cstdio>
 #include <nlohmann/json.hpp>
-#include <matplotlibcpp.h>
+#include <cstdlib>
 
-namespace plt = matplotlibcpp;
+
 using json = nlohmann::json;
 
 // Function to read JSON data
@@ -46,6 +46,45 @@ bool loadData(const std::string& filename, double& G, double& dt, double& T, int
     return true;
 }
 
+// Function to extract data from output file
+std::vector<Position> extractData(const std::string& filename, const std::string& targetName)
+{
+    std::ifstream file(filename);
+    std::vector<Position> positions;
+    std::string line;
+
+    // Check if file is open
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+        return positions;
+    }
+
+    // Skip the header line
+    std::getline(file, line);
+
+    // Read the data
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string name;
+        double t, x, y, z, vx, vy, vz;
+
+        // Read the data from the line
+        time_t time;
+        if (iss >> name >> time >> x >> y >> z >> vx >> vy >> vz)
+        {
+            // Check if name matches targetName
+            if (name == targetName)
+            {
+                // Store x, y, z positions in the array
+                positions.push_back({ x, y, z });
+            }
+        }
+    }
+    // Close the file
+    file.close();
+    return positions;
+}
+
 int main() {
     // Load data
     double G, dt, T;
@@ -64,10 +103,17 @@ int main() {
                << std::setw(20) << "z" << std::setw(20) << "vx"
                << std::setw(20) << "vy" << std::setw(20) << "vz" << std::endl;
 
+    // Store initial positions for plotting
+    std::vector<Position> initialPositions(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        initialPositions[i] = bodies[i].position; // Store initial position
+    }
+
     // Main simulation loop
     double t0 = 0.0, t_final = T;
     for (double t = t0; t <= t_final; t += dt) {
         RK4(bodies, n, t, dt, G); // Call RK4
+
         // Write current state to output file
         for (const auto& body : bodies) {
             outputFile << std::setw(20) << body.name
@@ -83,11 +129,42 @@ int main() {
 
     outputFile.close(); // Close the output file
 
-    int result = system("cd .. && python NBodySimViz.py");
+    // Create vectors to hold x, y, and z coordinates for each body
+    std::vector<std::vector<double>> xCoordinates(bodies.size());
+    std::vector<std::vector<double>> yCoordinates(bodies.size());
+    std::vector<std::vector<double>> zCoordinates(bodies.size());
 
-    if (result != 0) {
-        std::cerr << "Error running Python script." << std::endl;
+    // Extract data from output file
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        std::vector<Position> positions = extractData("../output.txt", bodies[i].name);
+        for (const auto& position : positions) {
+            xCoordinates[i].push_back(position.x); // Store x coordinate
+            yCoordinates[i].push_back(position.y); // Store y coordinate
+            zCoordinates[i].push_back(position.z); // Store z coordinate
+        }
     }
+
+    // Store final positions for plotting
+    std::vector<Position> finalPositions(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        finalPositions[i] = bodies[i].position; // Store final position
+    }
+
+    // Save initial and final positions for Python plotting
+    std::ofstream posFile("../positions.txt");
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        posFile << bodies[i].name << " "
+                << initialPositions[i].x << " "
+                << initialPositions[i].y << " "
+                << initialPositions[i].z << " "
+                << finalPositions[i].x << " "
+                << finalPositions[i].y << " "
+                << finalPositions[i].z << " "
+                << bodies[i].mass << std::endl; // Assuming Body has a mass attribute
+    }
+    posFile.close();
+
+    int result = system("python ../NBodySimViz.py");
 
     return 0;
 }
