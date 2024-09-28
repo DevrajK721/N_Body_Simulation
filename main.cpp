@@ -91,7 +91,7 @@ int main() {
     int n;
     std::vector<Body> bodies;
 
-    if (!loadData("C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/C++ Basics/N_Body_Simulation/params.json", G, dt, T, n, bodies)) {
+    if (!loadData("../params.json", G, dt, T, n, bodies)) {
         std::cerr << "Failed to load data from params.json." << std::endl;
         return -1;
     }
