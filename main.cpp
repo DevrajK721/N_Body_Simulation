@@ -9,11 +9,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <GL/glu.h>
 #include <nlohmann/json.hpp>
 #include <cstdio>
+#include <matplot/matplot.h>
 
 using json = nlohmann::json;
 
@@ -90,6 +88,55 @@ std::vector<Position> extractData(const std::string& filename, const std::string
     return positions;
 }
 
+// Function to write Gnuplot script for plotting bodies in 3D
+void plotBodies(const std::vector<Body>& bodies) {
+    // Open Gnuplot script file
+    std::ofstream gnuplotScript("plot_bodies.gnuplot");
+
+    // Write basic setup for Gnuplot
+    gnuplotScript << "set terminal qt size 800,600\n";
+    gnuplotScript << "set xlabel 'X-axis'\n";
+    gnuplotScript << "set ylabel 'Y-axis'\n";
+    gnuplotScript << "set zlabel 'Z-axis'\n";
+    gnuplotScript << "set title 'N Body Simulation'\n";
+    gnuplotScript << "set grid\n";
+    gnuplotScript << "set view equal xyz\n";
+
+    // Initialize 3D plot command
+    gnuplotScript << "splot ";
+
+    bool first = true;
+    for (const auto& body : bodies) {
+        // Extract x, y, z coordinates
+        std::vector<double> x, y, z;
+        std::vector<Position> positions = extractData("../output.txt", body.name);
+
+        // Write data to a file for Gnuplot
+        std::ofstream dataFile(body.name + ".dat");
+        for (const auto& pos : positions) {
+            dataFile << pos.x << " " << pos.y << " " << pos.z << "\n";
+        }
+        dataFile.close();
+
+        // Add each body's trajectory to the Gnuplot script
+        if (!first) {
+            gnuplotScript << ", ";
+        }
+        gnuplotScript << "'" << body.name << ".dat' with lines title '" << body.name << "'";
+
+        first = false;
+    }
+
+    // Close the Gnuplot script
+    gnuplotScript << "\n";
+    gnuplotScript << "pause -1\n"; // Keeps the plot window open
+    gnuplotScript.close();
+
+    // Run Gnuplot script via system call
+    system("gnuplot -p plot_bodies.gnuplot");
+}
+
+
 int main() {
     // Load data
     double G, dt, T;
@@ -143,61 +190,8 @@ int main() {
         }
     }
 
-    // Normalizing values for simulation (time-saving)
-    double maxX = std::numeric_limits<double>::lowest();
-    double maxY = std::numeric_limits<double>::lowest();
-    double maxZ = std::numeric_limits<double>::lowest();
-
-    // Extract data and find the maximum coordinates
-    for (size_t i = 0; i < bodies.size(); ++i) {
-        std::vector<Position> positions = extractData("../output.txt", bodies[i].name);
-        for (const auto& position : positions) {
-            xCoordinates[i].push_back(position.x); // Store x coordinate
-            yCoordinates[i].push_back(position.y); // Store y coordinate
-            zCoordinates[i].push_back(position.z); // Store z coordinate
-
-            // Update maximum coordinates
-            if (position.x > maxX) {
-                maxX = position.x;
-            }
-            if (position.y > maxY) {
-                maxY = position.y;
-            }
-            if (position.z > maxZ) {
-                maxZ = position.z;
-            }
-        }
-    }
-
-    // Print the maximum coordinates to the terminal
-    std::cout << "Maximum Coordinates:" << std::endl;
-    std::cout << "Max X: " << maxX << std::endl;
-    std::cout << "Max Y: " << maxY << std::endl;
-    std::cout << "Max Z: " << maxZ << std::endl;
-
-    // Normalize x, y, and z coordinates by their maximum values
-    for (size_t i = 0; i < bodies.size(); ++i) {
-        for (size_t j = 0; j < xCoordinates[i].size(); ++j) {
-            xCoordinates[i][j] /= maxX; // Normalize x coordinate
-            yCoordinates[i][j] /= maxY; // Normalize y coordinate
-            zCoordinates[i][j] /= maxZ; // Normalize z coordinate
-        }
-    }
-
-    std::vector<double> norm_time; // Vector to hold normalized time values
-
-    // Check if there are any bodies and if the first body's coordinates are populated
-    if (!xCoordinates.empty() && !xCoordinates[0].empty()) {
-        size_t numPoints = xCoordinates[0].size(); // Length of the first body's coordinates
-
-        // Generate equally spaced time values between 0 and 30 seconds
-        norm_time.resize(numPoints); // Resize norm_time to match the number of points
-        for (size_t j = 0; j < numPoints; ++j) {
-            norm_time[j] = (30.0 / (numPoints - 1)) * j; // Equally spaced points
-        }
-    }
-
-
+    // Plot the bodies' trajectories
+    plotBodies(bodies);
 
     return 0;
 }

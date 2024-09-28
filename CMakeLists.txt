@@ -13,6 +13,7 @@ set(JSON_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Qua
 set(GLEW_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/glew")
 set(GLM_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/glm")
 set(OPENGL_DIR "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/um/x64")
+set(MPP_DIR "C:/Program Files/Matplot++ 1.2.0")
 
 # The source files for my project
 add_executable(NBodySim main.cpp functions.cpp)
@@ -21,6 +22,7 @@ add_executable(NBodySim main.cpp functions.cpp)
 include_directories("${JSON_DIR}/include")
 include_directories("${GLEW_DIR}/include")
 include_directories("${GLFW_DIR}/include")
+include_directories("${MPP_DIR}/include")
 
 # Check if libraries are found
 message(STATUS "GLFW_DIR: ${GLFW_DIR}")
@@ -33,4 +35,5 @@ set(GLU_LIBRARY "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/um/x64/
 find_library(GLFW_LIBRARY NAMES glfw3 HINTS "${GLFW_DIR}/src/Release" NO_DEFAULT_PATH)
 find_library(GLEW_LIBRARY NAMES glew32 HINTS "${GLEW_DIR}/lib/Release/x64" NO_DEFAULT_PATH)
 find_library(OPENGL_LIBRARY NAMES OpenGL32 HINTS "${OPENGL_DIR}" NO_DEFAULT_PATH)
-target_link_libraries(NBodySim ${GLEW_LIBRARY} ${GLFW_LIBRARY} ${OPENGL_LIBRARY} ${GLU_LIBRARY})
+find_library(MPP_LIBRARY NAMES matplot HINTS "${MPP_DIR}/lib" NO_DEFAULT_PATH)
+target_link_libraries(NBodySim PRIVATE ${GLEW_LIBRARY} ${GLFW_LIBRARY} ${OPENGL_LIBRARY} ${GLU_LIBRARY})
