@@ -1,39 +1,27 @@
 # Minimum version of CMake required to build this project
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 
 # Name of the project
 project(N_Body_Simulation)
 
 # Set the C++ standard to use
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
-# Paths to libraries
-set(GLFW_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/glfw")
+# Specify the Python executable
+#set(Python_EXECUTABLE "C:/Users/Devra/anaconda3/python.exe")
+
+## Include Python Libraries since we are using matplotlib-cpp
+#find_package(Python3 REQUIRED COMPONENTS Development NumPy)
+
+# Set Json directory
 set(JSON_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/json")
-set(GLEW_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/glew")
-set(GLM_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/glm")
-set(OPENGL_DIR "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/um/x64")
-set(MPP_DIR "C:/Program Files/Matplot++ 1.2.0")
+#set(MPL_DIR "C:/Users/Devra/OneDrive - Imperial College London/Current Work/Quantitative Finance Preparation/C++ Work/Libraries/Libs/matplotlib-cpp")
 
-# The source files for my project
+# Add the executable (DO NOT CHANGE)
 add_executable(NBodySim main.cpp functions.cpp)
-# The "include" directories
-#target_include_directories(NBodySim PRIVATE "${GLFW_DIR}/include")
-include_directories("${JSON_DIR}/include")
-include_directories("${GLEW_DIR}/include")
-include_directories("${GLFW_DIR}/include")
-include_directories("${MPP_DIR}/include")
 
-# Check if libraries are found
-message(STATUS "GLFW_DIR: ${GLFW_DIR}")
-message(STATUS "GLEW_DIR: ${GLEW_DIR}")
-message(STATUS "OPENGL_DIR: ${OPENGL_LIBRARY}")
-
-set(GLU_LIBRARY "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/um/x64/GlU32.Lib")
-
-# Find and link libraries
-find_library(GLFW_LIBRARY NAMES glfw3 HINTS "${GLFW_DIR}/src/Release" NO_DEFAULT_PATH)
-find_library(GLEW_LIBRARY NAMES glew32 HINTS "${GLEW_DIR}/lib/Release/x64" NO_DEFAULT_PATH)
-find_library(OPENGL_LIBRARY NAMES OpenGL32 HINTS "${OPENGL_DIR}" NO_DEFAULT_PATH)
-find_library(MPP_LIBRARY NAMES matplot HINTS "${MPP_DIR}/lib" NO_DEFAULT_PATH)
-target_link_libraries(NBodySim PRIVATE ${GLEW_LIBRARY} ${GLFW_LIBRARY} ${OPENGL_LIBRARY} ${GLU_LIBRARY})
+## Include the directories (DO NOT CHANGE)
+include_directories("${JSON_DIR}/include") #"${Python3_INCLUDE_DIRS}" "${MPL_DIR}" "${Python3_NumPy_INCLUDE_DIRS}")
+#
+## Link the libraries (DO NOT CHANGE)
+#target_link_libraries(NBodySim ${Python3_LIBRARIES} "C:/Users/Devra/anaconda3/libs/python312_d.lib")
