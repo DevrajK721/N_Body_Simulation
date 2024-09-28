@@ -16,7 +16,7 @@ This project implements an N-body simulation using C++. It utilizes CMake for bu
 First, clone this repository to your local machine:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/DevrajK721/N_Body_Simulation.git
 cd N_Body_Simulation
 ```
 
