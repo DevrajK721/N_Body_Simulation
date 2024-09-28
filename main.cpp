@@ -1,17 +1,14 @@
 #include <iostream>
 #include <vector>
-#include <cstdlib>
 #include <string>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 #include "header.h" // Ensure this contains your Body definition
 #include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include <nlohmann/json.hpp>
-#include <cstdio>
-#include <matplot/matplot.h>
+#include <cstdlib>
+
 
 using json = nlohmann::json;
 
@@ -88,55 +85,6 @@ std::vector<Position> extractData(const std::string& filename, const std::string
     return positions;
 }
 
-// Function to write Gnuplot script for plotting bodies in 3D
-void plotBodies(const std::vector<Body>& bodies) {
-    // Open Gnuplot script file
-    std::ofstream gnuplotScript("plot_bodies.gnuplot");
-
-    // Write basic setup for Gnuplot
-    gnuplotScript << "set terminal qt size 800,600\n";
-    gnuplotScript << "set xlabel 'X-axis'\n";
-    gnuplotScript << "set ylabel 'Y-axis'\n";
-    gnuplotScript << "set zlabel 'Z-axis'\n";
-    gnuplotScript << "set title 'N Body Simulation'\n";
-    gnuplotScript << "set grid\n";
-    gnuplotScript << "set view equal xyz\n";
-
-    // Initialize 3D plot command
-    gnuplotScript << "splot ";
-
-    bool first = true;
-    for (const auto& body : bodies) {
-        // Extract x, y, z coordinates
-        std::vector<double> x, y, z;
-        std::vector<Position> positions = extractData("../output.txt", body.name);
-
-        // Write data to a file for Gnuplot
-        std::ofstream dataFile(body.name + ".dat");
-        for (const auto& pos : positions) {
-            dataFile << pos.x << " " << pos.y << " " << pos.z << "\n";
-        }
-        dataFile.close();
-
-        // Add each body's trajectory to the Gnuplot script
-        if (!first) {
-            gnuplotScript << ", ";
-        }
-        gnuplotScript << "'" << body.name << ".dat' with lines title '" << body.name << "'";
-
-        first = false;
-    }
-
-    // Close the Gnuplot script
-    gnuplotScript << "\n";
-    gnuplotScript << "pause -1\n"; // Keeps the plot window open
-    gnuplotScript.close();
-
-    // Run Gnuplot script via system call
-    system("gnuplot -p plot_bodies.gnuplot");
-}
-
-
 int main() {
     // Load data
     double G, dt, T;
@@ -154,6 +102,12 @@ int main() {
                << std::setw(20) << "x" << std::setw(20) << "y"
                << std::setw(20) << "z" << std::setw(20) << "vx"
                << std::setw(20) << "vy" << std::setw(20) << "vz" << std::endl;
+
+    // Store initial positions for plotting
+    std::vector<Position> initialPositions(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        initialPositions[i] = bodies[i].position; // Store initial position
+    }
 
     // Main simulation loop
     double t0 = 0.0, t_final = T;
@@ -190,8 +144,27 @@ int main() {
         }
     }
 
-    // Plot the bodies' trajectories
-    plotBodies(bodies);
+    // Store final positions for plotting
+    std::vector<Position> finalPositions(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        finalPositions[i] = bodies[i].position; // Store final position
+    }
+
+    // Save initial and final positions for Python plotting
+    std::ofstream posFile("../positions.txt");
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        posFile << bodies[i].name << " "
+                << initialPositions[i].x << " "
+                << initialPositions[i].y << " "
+                << initialPositions[i].z << " "
+                << finalPositions[i].x << " "
+                << finalPositions[i].y << " "
+                << finalPositions[i].z << " "
+                << bodies[i].mass << std::endl; // Assuming Body has a mass attribute
+    }
+    posFile.close();
+
+    int result = system("python ../NBodySimViz.py");
 
     return 0;
 }
